@@ -1,4 +1,3 @@
-# Configurações de Instalação Fluig (Voyager 2.0)
 INSTALL_PATH=${FLUIG_INSTALL_PATH}
 
 # Módulos
@@ -7,15 +6,7 @@ solr_enabled=${INSTALL_SOLR}
 resource_node_install=${INSTALL_NODE}
 node_enabled=${INSTALL_NODE}
 
-# Banco de Dados (Legado)
-db.type=${DB_TYPE}
-db.user=${DB_USER}
-db.password=${DB_PASSWORD}
-db.server=${DB_HOST}
-db.port=${DB_PORT}
-db.name=${DB_NAME}
-
-# Banco de Dados (Voyager 2.0)
+# Banco de Dados
 db_type=${DB_TYPE}
 db_user=${DB_USER}
 db_password=${DB_PASSWORD}
@@ -24,22 +15,21 @@ db_port=${DB_PORT}
 db_name=${DB_NAME}
 db_driverPath=${DB_DRIVER_PATH}
 db_driver=${DB_DRIVER_CLASS}
+# Obrigatório pelo validator do installer — runtime usa FLUIG_CONFIG_DATABASE_*_POOL_SIZE (env var)
 db_minPoolSize=${POOL_DS_MIN}
 db_maxPoolSize=${POOL_DS_MAX}
 db_roMinPoolSize=${POOL_DS_MIN}
 db_roMaxPoolSize=${POOL_DS_MAX}
-database_type=${DB_TYPE}
-database_name=${DB_NAME}
-user_name=${DB_USER}
-user_password=${DB_PASSWORD}
 
 # Servidor
 server_name=127.0.0.1
 server_port=8080
-is_new_install=true
-db_createSchema=true
+is_new_install=${IS_NEW_INSTALL}
+db_createSchema=${DB_CREATE_SCHEMA}
 
-# JVM
+# JVM — Obrigatório pelo validator do installer
+# Runtime usa FLUIG_SERVER_MEMORY_MIN/MAX (env var em standalone.conf)
+# Metaspace é hardcoded em standalone.conf (96M/1024m), sem override por env var
 server_memory_heapSize=${JVM_MIN_HEAP}m
 server_memory_heapMaxSize=${JVM_MAX_HEAP}m
 server_memory_metaspaceSize=${JVM_MIN_METASPACE}m
@@ -47,7 +37,8 @@ server_memory_metaspaceMaxSize=${JVM_MAX_METASPACE}m
 server_memory_permSize=256m
 server_memory_permMaxSize=512m
 
-# Pools
+# Pools — Obrigatório pelo validator do installer
+# Runtime usa FLUIG_CONFIG_SERVER_* (env var em standalone.xml)
 server_pool_EJBPoolSize=${POOL_EJB}
 server_pool_HttpThreadSize=${POOL_HTTP}
 server_pool_MDBPoolSize=${POOL_MDB}
@@ -58,26 +49,27 @@ license_type=ls
 ls_server=${LS_HOST}
 ls_port=${LS_PORT}
 
-# Realtime (Node)
-node_server=fluig-realtime
-node_port=8888
+# Realtime — Express (HTTP) em :8888, socket.io (WebSocket) em :7070
+# node_publicPort  → "URL para recebimento" no wcmadmin (browser → WebSocket)
+# node_privatePort → "URL interna para envio" no wcmadmin (JBoss → Express)
+# node_chatPort    → chatPort no package.json (porta onde socket.io escuta)
+# node_realtimePort→ realtimePort no package.json (porta onde Express escuta)
+node_server=localhost
 node_publicServer=localhost
-node_publicPort=8888
-node_privateServer=fluig-realtime
+node_privateServer=localhost
+node_chatServer=localhost
+node_realtimeServer=localhost
+node_endpointServer=localhost
+node_port=8888
+node_publicPort=7070
 node_privatePort=8888
-node_chatServer=fluig-realtime
 node_chatPort=7070
-node_realtimeServer=fluig-realtime
 node_realtimePort=8888
-node_endpointServer=fluig-realtime
 node_endpointPort=8000
-node_url=http://fluig-realtime
-node_chat_port=7070
-node_realtime_port=8888
-node_endpoint_port=8000
+node_url=http://localhost
 
 # Indexer (Solr)
-solr_url=http://fluig-indexer:8983/solr
+solr_url=http://localhost:8983/solr
 
 # E-mail
 email_server=localhost

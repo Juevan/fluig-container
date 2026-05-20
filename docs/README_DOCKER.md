@@ -1,58 +1,76 @@
-# Fluig 2.0 Docker (Modular)
+# Fluig Community Container — Detalhes Técnicos
 
-Este diretório contém a configuração para rodar o TOTVS Fluig 2.0 (Voyager) no Docker de forma modular e persistente.
+## Arquitetura
 
-## Estrutura
-- **fluig:** Container principal com o Wildfly/JBoss (App Server).
-- **fluig-db:** MySQL 8.0 (charset `utf8`, collation `utf8_general_ci`, `lower_case_table_names=1`).
-- **fluig-indexer:** Container Solr para indexação (opcional, via `docker-compose.solr.yml`).
-- **fluig-realtime:** Container Node.js para eventos em tempo real (opcional, via `docker-compose.node.yml`).
+Dois containers orquestrados por um único `docker-compose.yml`:
 
-## Como Usar
+| Container | Imagem | Função |
+|---|---|---|
+| `fluig` | Ubuntu 24.04 (customizado) | WildFly/JBoss + Solr + Node.js |
+| `fluig-db` | mysql:8.0 | Persistência de dados |
 
-### 1. Preparação
-- Os arquivos do instalador (descompactados) devem estar na pasta `installer-package/` na raiz do projeto.
-- O sistema localiza automaticamente o `fluig-installer.jar` e a pasta `jdk-64` dentro desta pasta.
+Solr e Node.js rodam **dentro do container `fluig`**, controlados pelas variáveis `INSTALL_SOLR` e `INSTALL_NODE` no `.env`.
 
-### 2. Subir o Ambiente
-```bash
-# Ambiente completo (App + DB + Solr + Realtime)
-docker compose -f docker-compose.yml -f docker-compose.solr.yml -f docker-compose.node.yml up -d --build
+### Rede e Volumes
 
-# Apenas App + DB
-docker compose up -d --build
+```
+fluig-net (bridge)
+  ├── fluig      ←→ fluig-app-data (/opt/totvs/fluig)
+  └── fluig-db   ←→ fluig-db-data  (/var/lib/mysql)
 ```
 
-### 3. Acompanhar Logs
-```bash
-docker logs -f fluig
-```
+---
 
-### 4. Acessar
-- **Portal:** http://localhost:8080/portal
-- **Admin Console:** http://localhost:9990
+## O que o `entrypoint.sh` faz
 
-## O que o `entrypoint.sh` Faz Automaticamente
+Executado a cada boot do container:
 
-O script de inicialização executa as seguintes tarefas em cada boot:
+1. **Aguarda o MySQL** via TCP check antes de prosseguir
+2. **Baixa o driver JDBC** (MySQL ou PostgreSQL) se necessário
+3. **Gera `install.conf`** substituindo variáveis de ambiente no template
+4. **Instalação silenciosa** — só executa se `standalone.xml` não existe ou `FLUIG_UPDATE=true`
+5. **Patches no `standalone.xml`:**
+   - Bind `<any-address/>` para aceitar conexões externas
+   - Força porta HTTP `8080`
+   - Substitui placeholders de SMTP
+6. **Solr:** cria `/etc/default/fluig_Indexer.in.sh` com `SOLR_SECURITY_MANAGER_ENABLED=false` e `allowPaths=*`, inicia na porta `8983` e cria o core `0` se necessário
+7. **JBoss** em background com bind `0.0.0.0`
+8. **Node.js Realtime** após JBoss estar pronto (socket.io em `:7070`, Express em `:8888`)
+9. **`tail -f`** nos logs do JBoss para manter o container vivo
 
-1. **Aguarda o banco** ficar disponível via TCP.
-2. **Gera o `install.conf`** a partir do template, substituindo variáveis de ambiente.
-3. **Baixa o driver JDBC** (MySQL Connector/J 8.0.33) se necessário.
-4. **Executa a instalação silenciosa** (apenas se `FLUIG_UPDATE=true` ou se é a primeira execução).
-5. **Aplica patches no `standalone.xml`:**
-   - Força interfaces de rede para `0.0.0.0` (acesso externo no Docker).
-   - Substitui placeholders de e-mail (`__email_smtpServer__`, `__email_smtpPort__`).
-   - Força a porta HTTP para `8080`.
-   - Substitui `127.0.0.1` por `localhost` para redirecionamentos corretos.
-6. **Inicia o Wildfly** com `-b 0.0.0.0 -bmanagement 0.0.0.0`.
+---
+
+## Portas
+
+| Porta | Serviço |
+|---|---|
+| `8080` | Fluig HTTP (JBoss) |
+| `8443` | Fluig HTTPS |
+| `8983` | Solr Admin |
+| `8888` | Node.js Express (notificações JBoss → Node) |
+| `7070` | Node.js WebSocket/socket.io (browser → Node) |
+| `3306` | MySQL |
+
+---
 
 ## Persistência
-- **`fluig-app-data`:** Volume com os binários e configurações do Fluig (`/opt/totvs/fluig`).
-- **`fluig-db-data`:** Volume com os dados do MySQL (`/var/lib/mysql`).
 
-> [!IMPORTANT]
-> A primeira execução demora alguns minutos pois o instalador descompacta e configura todos os arquivos. Acompanhe com `docker logs -f fluig`.
+| Volume | Conteúdo |
+|---|---|
+| `fluig-app-data` | Binários, configurações e GED do Fluig |
+| `fluig-db-data` | Dados do MySQL |
 
 > [!CAUTION]
-> O comando `docker compose down -v` **apaga ambos os volumes**. Use apenas para reset total.
+> `docker compose down -v` remove ambos os volumes permanentemente.
+
+---
+
+## Configuração do Solr (Nota técnica)
+
+O Fluig armazena os índices em `/opt/totvs/fluig/repository/...`, que fica fora do `SOLR_HOME`. O Solr 9.x bloqueia isso por padrão via SecurityManager. A solução implementada:
+
+```bash
+# /etc/default/fluig_Indexer.in.sh (criado automaticamente pelo entrypoint)
+SOLR_SECURITY_MANAGER_ENABLED=false
+SOLR_OPTS="$SOLR_OPTS -Dsolr.allowPaths=*"
+```

@@ -1,165 +1,123 @@
 # Run Book — Fluig Community Container
 
-Este guia contém as instruções operacionais para gerenciar o ambiente Docker do Fluig.
+## 1. Preparação Inicial
 
-## 🛠️ 1. Preparação Inicial
-Antes de subir o ambiente pela primeira vez:
-1. Descompacte o instalador do Fluig dentro da pasta `installer-package/` na raiz do projeto.
-2. Edite o arquivo `docker/.env` e defina as senhas e configurações desejadas.
-3. Certifique-se de que o Docker e o Docker Compose (v2+) estão instalados.
+1. Descompacte o instalador do Fluig em `installer-package/` na raiz do projeto
+2. Ajuste `docker/.env` com senhas e configurações desejadas
+3. Certifique-se de ter Docker + Docker Compose v2 instalados
 
 ---
 
-## 🚀 2. Comandos de Inicialização
+## 2. Comandos Essenciais
 
-### Subir Ambiente Completo (Recomendado)
 ```bash
 cd docker
-docker compose -f docker-compose.yml -f docker-compose.solr.yml -f docker-compose.node.yml up -d --build
+
+bash up.sh               # Subir ambiente (build + start)
+docker compose down      # Encerrar (preserva dados)
+docker compose down -v   # ⚠️ Reset total (apaga volumes e dados)
+
+docker logs -f fluig     # Acompanhar instalação e boot
+docker logs -f fluig-db  # Logs do banco
 ```
 
-### Subir Apenas o Básico (App + DB)
-```bash
-cd docker
-docker compose up -d --build
-```
+**Acesso após boot:**
+- Portal: http://localhost:8080/portal
+- Solr Admin: http://localhost:8983
 
-### Subir com Módulos Específicos
-```bash
-# App + DB + Solr
-docker compose -f docker-compose.yml -f docker-compose.solr.yml up -d
-
-# App + DB + Realtime
-docker compose -f docker-compose.yml -f docker-compose.node.yml up -d
-```
+> [!IMPORTANT]
+> O primeiro boot demora ~10–20 min (instalação silenciosa). Acompanhe com `docker logs -f fluig` até aparecer `Todos os serviços iniciados.`
 
 ---
 
-## 📊 3. Monitoramento e Logs
-A instalação inicial é automática. Acompanhe o progresso pelos logs:
+## 3. Modos de Inicialização (`FLUIG_UPDATE`)
+
+| Valor | Comportamento | Volume `fluig-app-data` | Schema do banco |
+|---|---|---|---|
+| `false` *(padrão)* | Boot normal, sem instalação | Preservado | Preservado |
+| `update` | Aplica patch/nova versão sobre instalação existente | Preservado | Preservado |
+| `install` | Instalação limpa do zero | ⚠️ **Apagado e recriado** | Recriado |
+
+### Boot normal (dia a dia)
 ```bash
-# Logs do Fluig (instalação e boot)
-docker logs -f fluig
-
-# Logs do banco de dados
-docker logs -f fluig-db
-
-# Logs do indexador
-docker logs -f fluig-indexer
-
-# Logs do realtime
-docker logs -f fluig-realtime
+# FLUIG_UPDATE=false no .env
+bash up.sh
 ```
 
-### Indicadores de Sucesso
-Quando a instalação terminar e o servidor estiver pronto, você verá no log:
-```
-===============================================
-== Fluig is up and running right now.        ==
-===============================================
-```
+### Aplicar patch / nova versão (mantendo dados)
+1. Substitua o conteúdo de `installer-package/` pela nova versão
+2. No `.env`: `FLUIG_UPDATE=update`
+3. `bash up.sh`
+4. Após concluir: `FLUIG_UPDATE=false`
 
----
-
-## 🌐 4. Acesso
-- **URL:** http://localhost:8080/portal
-- **Admin Console (JBoss):** http://localhost:9990
-- **Solr:** http://localhost:8983
-
----
-
-## 🔄 5. Atualização de Versão
-
-### A) Atualização In-place (Recomendada)
-1. Substitua o conteúdo da pasta `installer-package/` pela nova versão.
-2. No arquivo `docker/.env`, altere `FLUIG_UPDATE=true`.
-3. Rode:
-   ```bash
-   docker compose -f docker-compose.yml -f docker-compose.solr.yml -f docker-compose.node.yml up -d --build
-   ```
-4. **Importante:** Após a conclusão, volte `FLUIG_UPDATE=false` no `.env`.
-
-### B) Instalação Limpa (Reset Total)
-1. Pare o ambiente e remova os volumes:
-   ```bash
-   docker compose -f docker-compose.yml -f docker-compose.solr.yml -f docker-compose.node.yml down -v
-   ```
-2. Substitua o instalador na pasta `installer-package/`.
-3. Certifique-se de que `FLUIG_UPDATE=true` no `.env`.
-4. Suba o ambiente:
-   ```bash
-   docker compose -f docker-compose.yml -f docker-compose.solr.yml -f docker-compose.node.yml up -d --build
-   ```
+### Instalação limpa (reset total dos binários)
+1. Substitua `installer-package/` se necessário
+2. No `.env`: `FLUIG_UPDATE=install`
+3. `bash up.sh`
+4. Após concluir: `FLUIG_UPDATE=false`
 
 > [!CAUTION]
-> O comando `down -v` **apaga todos os dados** (banco e arquivos). Use apenas quando quiser um ambiente completamente novo.
+> `FLUIG_UPDATE=install` apaga **todos os arquivos do Fluig** no volume (binários, GED, customizações). O banco de dados é preservado pois está em volume separado (`fluig-db-data`).
+
+> [!CAUTION]
+> `docker compose down -v` apaga **ambos os volumes** (app + banco). Irreversível.
 
 ---
 
-## 💾 6. Backup e Restore
+## 4. Backup e Restore
 
-### Backup do Banco de Dados (MySQL)
 ```bash
+# Backup do banco
 docker exec fluig-db mysqldump -u fluig -pfluig fluig > backup_db.sql
-```
 
-### Restore do Banco de Dados
-```bash
+# Restore do banco
 cat backup_db.sql | docker exec -i fluig-db mysql -u fluig -pfluig fluig
-```
 
-### Backup do GED (Volume)
-Os arquivos do GED estão no volume `fluig-app-data`. Localize fisicamente no host:
-```bash
+# Localizar volume do GED no host
 docker volume inspect docker_fluig-app-data
 ```
 
 ---
 
-## 🔧 7. Troubleshooting
+## 5. Troubleshooting
 
-### O Fluig não conecta no banco
-Verifique no `.env` se o `DB_HOST` está definido como `db` (nome do serviço no compose).
+### Solr: "Erro ao comunicar com o Indexer"
+O Fluig cria o core `0` com `dataDir` fora do `SOLR_HOME`. O `entrypoint.sh` cria automaticamente `/etc/default/fluig_Indexer.in.sh` com `SOLR_SECURITY_MANAGER_ENABLED=false` e `allowPaths=*` para resolver esse bloqueio do Solr 9.x.
 
-### Erro de Collation (`utf8_general_ci`)
-O MySQL deve estar configurado com `--character-set-server=utf8 --collation-server=utf8_general_ci`. Isso já está no `docker-compose.yml`, mas se você resetou os volumes, refaça o `down -v` e suba novamente.
+### Realtime: "conexão websocket falhou"
+No painel wcmadmin, verifique:
+- **URL interna para envio de notificações:** `127.0.0.1:8888` (HTTP Express → JBoss)
+- **URL para recebimento de notificações:** `127.0.0.1:7070` (WebSocket/socket.io → browser)
 
-### Erro de Case-Sensitivity nas Tabelas
-O MySQL no Linux diferencia maiúsculas de minúsculas por padrão. O parâmetro `--lower-case-table-names=1` no `docker-compose.yml` corrige isso. Se o problema persistir, refaça o `down -v`.
+### Fluig não conecta no banco
+`DB_HOST` está hardcoded como `db` no compose (nome do serviço). Não é necessário configurar no `.env`.
 
-### Redirecionamento para hostname errado
-Se o navegador redireciona para um endereço como `http://db:8080` ou `http://fluig-server:8080`, o `entrypoint.sh` deveria ter corrigido isso automaticamente. Verifique se o container subiu com a versão mais recente do script (`docker compose build --no-cache`).
-
-### Erro de Memória (Out of Memory)
-Aumente os limites da JVM no `.env` (variáveis `JVM_MIN_HEAP` e `JVM_MAX_HEAP`) e certifique-se de que seu host tem pelo menos 8GB de RAM livre.
+### Erro de Memória (OOM)
+Aumente `JVM_MIN_HEAP` e `JVM_MAX_HEAP` no `.env`. Recomendado: mínimo 8 GB de RAM disponível no host.
 
 ### Porta 8080 não responde
-Verifique se o `standalone.xml` não está com a porta HTTP configurada incorretamente. O `entrypoint.sh` força a porta 8080 em cada boot, mas se o problema persistir:
+Verifique se o JBoss subiu corretamente:
 ```bash
-docker exec fluig grep 'socket-binding name="http"' /opt/totvs/fluig/appserver/standalone/configuration/standalone.xml
+docker exec fluig grep 'socket-binding name="http"' \
+    /opt/totvs/fluig/appserver/standalone/configuration/standalone.xml
 ```
-
-### Reinstalação Forçada
-Para forçar uma reinstalação completa:
-1. Mude `FLUIG_UPDATE=true` no `.env`.
-2. Rode `docker compose down -v && docker compose up -d --build`.
 
 ---
 
-## ⚙️ 8. Variáveis de Ambiente (.env)
+## 6. Variáveis de Ambiente (.env)
 
 | Variável | Descrição | Padrão |
 |---|---|---|
-| `DB_TYPE` | Tipo do banco de dados | `mysql` |
-| `DB_HOST` | Host do banco (nome do serviço) | `db` |
-| `DB_PORT` | Porta do banco | `3306` |
+| `DB_TYPE` | Tipo do banco (`mysql` ou `postgresql`) | `mysql` |
 | `DB_NAME` | Nome do banco | `fluig` |
 | `DB_USER` | Usuário do banco | `fluig` |
 | `DB_PASSWORD` | Senha do banco | `fluig` |
-| `JVM_MIN_HEAP` | Memória mínima da JVM (MB) | `2048` |
-| `JVM_MAX_HEAP` | Memória máxima da JVM (MB) | `4096` |
-| `FLUIG_UPDATE` | Forçar (re)instalação no boot | `false` |
-| `INSTALL_SOLR` | Habilitar módulo Solr | `true` |
-| `INSTALL_NODE` | Habilitar módulo Node.js | `true` |
-
----
+| `JVM_MIN_HEAP` | Heap mínima da JVM (MB) | `2048` |
+| `JVM_MAX_HEAP` | Heap máxima da JVM (MB) | `4096` |
+| `FLUIG_UPDATE` | Forçar reinstalação no boot | `false` |
+| `INSTALL_SOLR` | Habilitar Solr (Indexer) | `true` |
+| `INSTALL_NODE` | Habilitar Node.js (Realtime) | `true` |
+| `PORT_APP` | Porta HTTP do Fluig | `8080` |
+| `PORT_SOLR` | Porta do Solr | `8983` |
+| `PORT_REALTIME` | Porta Express do Node | `8888` |
+| `PORT_CHAT` | Porta WebSocket do Node | `7070` |
