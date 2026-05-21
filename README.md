@@ -16,6 +16,7 @@ A solução é composta por quatro containers principais:
 2. **fluig-db:** Instância MySQL 8.0 dedicada para persistência de dados.
 3. **fluig-indexer (Opcional):** Servidor Solr dedicado para serviços de busca e indexação.
 4. **fluig-realtime (Opcional):** Runtime Node.js para notificações e atualizações em tempo real.
+5. **fluig-mail:** Instância Mailpit para atuar como servidor SMTP "catch-all" para envio e teste local de e-mails do Fluig sem disparos para o mundo externo.
 
 ---
 
@@ -58,6 +59,9 @@ docker logs -f fluig
 
 # 5. Acesse no navegador
 # http://localhost:8080/portal
+
+# 6. Acesse os testes de E-mail (Mailpit Inbox)
+# http://localhost:8025/
 ```
 
 ## 📝 Documentação Adicional

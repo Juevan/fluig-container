@@ -132,4 +132,6 @@ if [ "$INSTALL_NODE" = "true" ] && [ -f "$FLUIG_INSTALL_PATH/node/bin/node" ]; t
 fi
 
 echo "Todos os serviços iniciados."
+
 tail -f /tmp/jboss.log "$FLUIG_INSTALL_PATH/appserver/standalone/log/server.log" 2>/dev/null
+e

@@ -72,11 +72,11 @@ node_url=http://localhost
 solr_url=http://localhost:8983/solr
 
 # E-mail
-email_server=localhost
-email_port=25
-email_sender=fluig@localhost
-email_needsAuth=false
+email_server=${EMAIL_SERVER}
+email_port=${EMAIL_PORT}
+email_sender=${EMAIL_SENDER}
+email_needsAuth=${EMAIL_AUTH}
 email_user=
 email_password=
-email_useSSL=false
-email_useTLS=false
+email_useSSL=${EMAIL_SSL}
+email_useTLS=${EMAIL_TLS}

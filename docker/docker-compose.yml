@@ -22,6 +22,7 @@ services:
     container_name: fluig
     depends_on:
       - db
+      - mailpit
     environment:
       - DB_TYPE=${DB_TYPE}
       - DB_HOST=db
@@ -52,6 +53,12 @@ services:
       - INSTALL_NODE=${INSTALL_NODE}
       - LS_HOST=${LS_HOST}
       - LS_PORT=${LS_PORT}
+      - EMAIL_SERVER=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_SENDER=${EMAIL_SENDER}
+      - EMAIL_AUTH=${EMAIL_AUTH}
+      - EMAIL_SSL=${EMAIL_SSL}
+      - EMAIL_TLS=${EMAIL_TLS}
     volumes:
       - fluig-app-data:${FLUIG_INSTALL_PATH}
       - ${INSTALLER_PATH}:/installer/package:ro
@@ -62,6 +69,15 @@ services:
       - "${PORT_SOLR}:8983"
       - "${PORT_REALTIME}:8888"
       - "${PORT_CHAT}:7070"
+    networks:
+      - fluig-net
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: fluig-mail
+    ports:
+      - "${PORT_MAIL_SMTP}:1025"
+      - "${PORT_MAIL_UI}:8025"
     networks:
       - fluig-net
 

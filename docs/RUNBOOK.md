@@ -121,3 +121,27 @@ docker exec fluig grep 'socket-binding name="http"' \
 | `PORT_SOLR` | Porta do Solr | `8983` |
 | `PORT_REALTIME` | Porta Express do Node | `8888` |
 | `PORT_CHAT` | Porta WebSocket do Node | `7070` |
+
+---
+
+## 7. E-mail e Notificações (SMTP / Mailpit)
+
+O ambiente inclui o container `mailpit` (`axllent/mailpit`) configurado para funcionar como um servidor SMTP local de testes ("catch-all"). Isso evita disparos de e-mail indesejados durante o desenvolvimento e captura todas as notificações emitidas pelo Fluig.
+
+**Acesso ao Mailpit:**
+- Painel web (Caixa de Entrada): http://localhost:8025
+
+**Como configurar o Fluig para usar o Mailpit:**
+Como o ambiente subiu "vanilla" (sem injeção forçada de configurações no banco), você precisa configurar o e-mail no painel do Fluig na primeira execução:
+
+1. Acesse o portal do Fluig (`http://localhost:8080/portal`)
+2. Faça login com o usuário administrador (`wcmadmin`)
+3. Vá em **Painel de Controle > WCM > Configuração de E-mail**
+4. Preencha os dados:
+   - **Servidor**: `mailpit`
+   - **Porta**: `1025`
+   - **Autenticação**: Não
+   - **Segurança**: Vazio/Nenhuma
+5. Salve as configurações.
+
+Após configurar, qualquer e-mail enviado pelo Fluig (como notificações de processos, recuperação de senha, etc.) será capturado e exibido na caixa de entrada do Mailpit.
