@@ -9,7 +9,7 @@ Dois containers orquestrados por um único `docker-compose.yml`:
 | `fluig` | Ubuntu 24.04 (customizado) | WildFly/JBoss + Solr + Node.js |
 | `fluig-db` | mysql:8.0 | Persistência de dados |
 
-Solr e Node.js rodam **dentro do container `fluig`**, controlados pelas variáveis `INSTALL_SOLR` e `INSTALL_NODE` no `.env`.
+Solr e Node.js rodam **dentro do container `fluig`**, controlados pelas variáveis `ENABLE_SOLR` e `ENABLE_REALTIME` no `.env`.
 
 ### Rede e Volumes
 
@@ -23,20 +23,16 @@ fluig-net (bridge)
 
 ## O que o `entrypoint.sh` faz
 
-Executado a cada boot do container:
+O `entrypoint.sh` é um orquestrador enxuto que delega as responsabilidades de inicialização e configuração para scripts modulares localizados em `/installer/scripts/lib/`:
 
-1. **Aguarda o MySQL** via TCP check antes de prosseguir
-2. **Baixa o driver JDBC** (MySQL ou PostgreSQL) se necessário
-3. **Gera `install.conf`** substituindo variáveis de ambiente no template
-4. **Instalação silenciosa** — só executa se `standalone.xml` não existe ou `FLUIG_UPDATE=true`
-5. **Patches no `standalone.xml`:**
-   - Bind `<any-address/>` para aceitar conexões externas
-   - Força porta HTTP `8080`
-   - Substitui placeholders de SMTP
-6. **Solr:** cria `/etc/default/fluig_Indexer.in.sh` com `SOLR_SECURITY_MANAGER_ENABLED=false` e `allowPaths=*`, inicia na porta `8983` e cria o core `0` se necessário
-7. **JBoss** em background com bind `0.0.0.0`
-8. **Node.js Realtime** após JBoss estar pronto (socket.io em `:7070`, Express em `:8888`)
-9. **`tail -f`** nos logs do JBoss para manter o container vivo
+1. **`database.sh`**: Aguarda a disponibilidade da porta do MySQL e baixa o driver JDBC do MySQL.
+2. **`installer.sh`**: Prepara a estrutura de pastas do Fluig, compila o `install.conf` a partir do template usando `envsubst` e dispara o instalador silencioso.
+3. **`xml.sh`**: Aplica patches de binding de IP e SMTP no `standalone.xml` do Wildfly e ajusta as permissões de arquivos para o usuário `fluig`.
+4. **`solr.sh`**: Inicializa o Solr de forma segura sob o usuário `fluig`, configura o arquivo `/etc/default/fluig_Indexer.in.sh` com as opções de permissão necessárias (`SOLR_SECURITY_MANAGER_ENABLED=false` e `allowPaths=*`) e cria o core `0`.
+5. **`jboss.sh`**: Inicia o JBoss/Wildfly em background sob o usuário `fluig` e aguarda até que a porta HTTP responda.
+6. **`realtime.sh`**: Configura a porta do chat WebSocket no `package.json` e inicializa o Node.js Realtime sob o usuário `fluig`.
+
+Ao final do fluxo, o orquestrador executa o `tail -f` nos logs do JBoss para manter o contêiner em execução.
 
 ---
 

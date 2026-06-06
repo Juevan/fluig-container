@@ -4,7 +4,7 @@
 O **Fluig Community Container** é um projeto focado em modernizar a execução da plataforma TOTVS Fluig utilizando uma arquitetura Docker modular, leve e de fácil manutenção. O objetivo principal é facilitar a criação de ambientes de desenvolvimento, estudo e homologação, removendo a complexidade das instalações manuais tradicionais.
 
 ## ✨ Principais Diferenciais
-- **Modularidade Total:** Ative ou desative os módulos de Indexação (Solr) e Real-time (Node.js) de forma independente via variáveis `INSTALL_SOLR` e `INSTALL_NODE` no `.env`.
+- **Modularidade Total:** Ative ou desative os módulos de Indexação (Solr) e Real-time (Node.js) de forma independente via variáveis `ENABLE_SOLR` e `ENABLE_REALTIME` no `.env`.
 - **Auto-Instalação:** O `entrypoint.sh` executa a instalação silenciosa do Fluig automaticamente na primeira inicialização, incluindo download do driver JDBC e patching do `standalone.xml`.
 - **Persistência Completa:** Todos os dados do banco e arquivos do GED (Volume) são preservados através de volumes Docker.
 - **Configuração via .env:** Todo o ambiente (portas, senhas, memória, pools) é gerenciado em um único arquivo de variáveis de ambiente.
@@ -35,8 +35,16 @@ fluig-community-container/
 │   ├── Dockerfile                 # Imagem base Ubuntu 24.04 + dependências
 │   ├── up.sh                      # Script de conveniência para subir o ambiente
 │   └── scripts/
-│       ├── entrypoint.sh          # Auto-instalação, Solr, Node.js e boot do JBoss
-│       └── install.conf.template  # Template dinâmico para instalação silenciosa
+│   └── scripts/
+│       ├── entrypoint.sh          # Orquestrador central de boot do contêiner
+│       ├── install.conf.template  # Template dinâmico para instalação silenciosa
+│       └── lib/                   # Scripts modulares de inicialização
+│           ├── database.sh        # Verificação do banco e driver JDBC
+│           ├── installer.sh       # Configuração e execução do instalador
+│           ├── jboss.sh           # Boot do JBoss/Wildfly
+│           ├── realtime.sh        # Boot do Node.js Realtime
+│           ├── solr.sh            # Boot seguro e configuração do Solr
+│           └── xml.sh             # Patches no standalone.xml do Wildfly
 ├── docs/
 │   ├── RUNBOOK.md                 # Guia operacional e troubleshooting
 │   ├── INSTALLATION_LINUX.md      # Guia de instalação bare-metal
@@ -48,7 +56,7 @@ fluig-community-container/
 ## ⚡ Quick Start
 ```bash
 # 1. Descompacte o instalador do Fluig na pasta installer-package/
-# 2. Configure o .env (módulos INSTALL_SOLR e INSTALL_NODE controlam Solr e Node.js)
+# 2. Configure o .env (módulos ENABLE_SOLR e ENABLE_REALTIME controlam Solr e Node.js)
 cd docker
 
 # 3. Suba o ambiente
@@ -66,6 +74,7 @@ docker logs -f fluig
 
 ## 📝 Documentação Adicional
 - **[RUNBOOK.md](docs/RUNBOOK.md):** Guia passo a passo de operação, backup e troubleshooting.
+- **[WCMADMIN_CONFIG.md](docs/WCMADMIN_CONFIG.md):** Guia passo a passo para configurar os módulos (E-mail, Solr e Realtime) no painel administrativo.
 - **[INSTALLATION_LINUX.md](docs/INSTALLATION_LINUX.md):** Guia de referência para instalação em bare-metal (Linux tradicional).
 - **[README_DOCKER.md](docs/README_DOCKER.md):** Detalhes técnicos da configuração Docker e do `entrypoint.sh`.
 

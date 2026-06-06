@@ -1,13 +1,13 @@
 INSTALL_PATH=${FLUIG_INSTALL_PATH}
 
 # Módulos
-resource_solr_install=${INSTALL_SOLR}
-solr_enabled=${INSTALL_SOLR}
-resource_node_install=${INSTALL_NODE}
-node_enabled=${INSTALL_NODE}
+resource_solr_install=${ENABLE_SOLR}
+solr_enabled=${ENABLE_SOLR}
+resource_node_install=${ENABLE_REALTIME}
+node_enabled=${ENABLE_REALTIME}
 
 # Banco de Dados
-db_type=${DB_TYPE}
+db_type=mysql
 db_user=${DB_USER}
 db_password=${DB_PASSWORD}
 db_server=${DB_HOST}
@@ -15,33 +15,29 @@ db_port=${DB_PORT}
 db_name=${DB_NAME}
 db_driverPath=${DB_DRIVER_PATH}
 db_driver=${DB_DRIVER_CLASS}
-# Obrigatório pelo validator do installer — runtime usa FLUIG_CONFIG_DATABASE_*_POOL_SIZE (env var)
 db_minPoolSize=${POOL_DS_MIN}
 db_maxPoolSize=${POOL_DS_MAX}
 db_roMinPoolSize=${POOL_DS_MIN}
 db_roMaxPoolSize=${POOL_DS_MAX}
 
-# Servidor
+# Configuração do Servidor
 server_name=127.0.0.1
-server_port=8080
+server_port=${PORT_APP}
 is_new_install=${IS_NEW_INSTALL}
 db_createSchema=${DB_CREATE_SCHEMA}
 
-# JVM — Obrigatório pelo validator do installer
-# Runtime usa FLUIG_SERVER_MEMORY_MIN/MAX (env var em standalone.conf)
-# Metaspace é hardcoded em standalone.conf (96M/1024m), sem override por env var
-server_memory_heapSize=${JVM_MIN_HEAP}m
-server_memory_heapMaxSize=${JVM_MAX_HEAP}m
-server_memory_metaspaceSize=${JVM_MIN_METASPACE}m
-server_memory_metaspaceMaxSize=${JVM_MAX_METASPACE}m
+# JVM (Obrigatório para o validador do instalador)
+server_memory_heapSize=${JAVA_MIN_HEAP}m
+server_memory_heapMaxSize=${JAVA_MAX_HEAP}m
+server_memory_metaspaceSize=512m
+server_memory_metaspaceMaxSize=1024m
 server_memory_permSize=256m
 server_memory_permMaxSize=512m
 
-# Pools — Obrigatório pelo validator do installer
-# Runtime usa FLUIG_CONFIG_SERVER_* (env var em standalone.xml)
-server_pool_EJBPoolSize=${POOL_EJB}
-server_pool_HttpThreadSize=${POOL_HTTP}
-server_pool_MDBPoolSize=${POOL_MDB}
+# Pools (Obrigatório para o validador do instalador)
+server_pool_EJBPoolSize=20
+server_pool_HttpThreadSize=200
+server_pool_MDBPoolSize=20
 server_pool_DataSourcePoolSize=${POOL_DS_MAX}
 
 # Licenciamento
@@ -49,34 +45,30 @@ license_type=ls
 ls_server=${LS_HOST}
 ls_port=${LS_PORT}
 
-# Realtime — Express (HTTP) em :8888, socket.io (WebSocket) em :7070
-# node_publicPort  → "URL para recebimento" no wcmadmin (browser → WebSocket)
-# node_privatePort → "URL interna para envio" no wcmadmin (JBoss → Express)
-# node_chatPort    → chatPort no package.json (porta onde socket.io escuta)
-# node_realtimePort→ realtimePort no package.json (porta onde Express escuta)
+# Realtime (Node.js)
 node_server=localhost
-node_publicServer=localhost
-node_privateServer=localhost
-node_chatServer=localhost
-node_realtimeServer=localhost
-node_endpointServer=localhost
-node_port=8888
-node_publicPort=7070
-node_privatePort=8888
-node_chatPort=7070
-node_realtimePort=8888
+node_publicServer=${NODE_HOST}
+node_privateServer=${NODE_HOST}
+node_chatServer=${NODE_HOST}
+node_realtimeServer=${NODE_HOST}
+node_endpointServer=${NODE_HOST}
+node_port=${PORT_REALTIME}
+node_publicPort=${PORT_CHAT}
+node_privatePort=${PORT_REALTIME}
+node_chatPort=${PORT_CHAT}
+node_realtimePort=${PORT_REALTIME}
 node_endpointPort=8000
-node_url=http://localhost
+node_url=http://${NODE_HOST}
 
 # Indexer (Solr)
-solr_url=http://localhost:8983/solr
+solr_url=http://localhost:${PORT_SOLR}/solr
 
 # E-mail
-email_server=${EMAIL_SERVER}
+email_server=${EMAIL_HOST}
 email_port=${EMAIL_PORT}
 email_sender=${EMAIL_SENDER}
-email_needsAuth=${EMAIL_AUTH}
+email_needsAuth=false
 email_user=
 email_password=
-email_useSSL=${EMAIL_SSL}
-email_useTLS=${EMAIL_TLS}
+email_useSSL=false
+email_useTLS=false

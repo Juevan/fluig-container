@@ -1,89 +1,69 @@
 services:
+
   db:
     image: mysql:8.0
     container_name: fluig-db
+    restart: unless-stopped
+    env_file:
+      - .env
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --lower-case-table-names=1
+      - --character-set-server=utf8
+      - --collation-server=utf8_general_ci
+    ports:
+      - "${PORT_DB:-3306}:3306"
     volumes:
       - fluig-db-data:/var/lib/mysql
-    ports:
-      - "${PORT_DB}:3306"
-    command: --default-authentication-plugin=mysql_native_password --innodb-buffer-pool-size=256M --innodb-log-buffer-size=16M --lower-case-table-names=1 --character-set-server=utf8 --collation-server=utf8_general_ci
-    networks:
-      - fluig-net
-
-  fluig:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: fluig
-    depends_on:
-      - db
-      - mailpit
-    environment:
-      - DB_TYPE=${DB_TYPE}
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      # Nomes originais usados pelo eval do install.conf.template
-      - JVM_MIN_HEAP=${JVM_MIN_HEAP}
-      - JVM_MAX_HEAP=${JVM_MAX_HEAP}
-      - JVM_MIN_METASPACE=${JVM_MIN_METASPACE}
-      - JVM_MAX_METASPACE=${JVM_MAX_METASPACE}
-      - POOL_EJB=${POOL_EJB}
-      - POOL_HTTP=${POOL_HTTP}
-      - POOL_MDB=${POOL_MDB}
-      - POOL_DS_MAX=${POOL_DS_MAX}
-      - POOL_DS_MIN=${POOL_DS_MIN}
-      # Nomes FLUIG_* usados pelo JBoss em runtime (standalone.conf e standalone.xml)
-      - FLUIG_SERVER_MEMORY_MIN=${JVM_MIN_HEAP}m
-      - FLUIG_SERVER_MEMORY_MAX=${JVM_MAX_HEAP}m
-      - FLUIG_CONFIG_DATABASE_MIN_POOL_SIZE=${POOL_DS_MIN}
-      - FLUIG_CONFIG_DATABASE_MAX_POOL_SIZE=${POOL_DS_MAX}
-      - FLUIG_CONFIG_DATABASE_MIN_POOL_SIZE_RO=${POOL_DS_MIN}
-      - FLUIG_CONFIG_DATABASE_MAX_POOL_SIZE_RO=${POOL_DS_MAX}
-      - FLUIG_INSTALL_PATH=${FLUIG_INSTALL_PATH}
-      - FLUIG_UPDATE=${FLUIG_UPDATE}
-      - INSTALL_SOLR=${INSTALL_SOLR}
-      - INSTALL_NODE=${INSTALL_NODE}
-      - LS_HOST=${LS_HOST}
-      - LS_PORT=${LS_PORT}
-      - EMAIL_SERVER=${EMAIL_HOST}
-      - EMAIL_PORT=${EMAIL_PORT}
-      - EMAIL_SENDER=${EMAIL_SENDER}
-      - EMAIL_AUTH=${EMAIL_AUTH}
-      - EMAIL_SSL=${EMAIL_SSL}
-      - EMAIL_TLS=${EMAIL_TLS}
-    volumes:
-      - fluig-app-data:${FLUIG_INSTALL_PATH}
-      - ${INSTALLER_PATH}:/installer/package:ro
-      - ${SCRIPTS_PATH}:/installer/scripts:ro
-    ports:
-      - "${PORT_APP}:8080"
-      - "${PORT_SSL}:8443"
-      - "${PORT_SOLR}:8983"
-      - "${PORT_REALTIME}:8888"
-      - "${PORT_CHAT}:7070"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     networks:
       - fluig-net
 
   mailpit:
-    image: axllent/mailpit:latest
+    image: axllent/mailpit
     container_name: fluig-mail
+    restart: unless-stopped
+    profiles:
+      - mail
     ports:
-      - "${PORT_MAIL_SMTP}:1025"
-      - "${PORT_MAIL_UI}:8025"
+      - "${EMAIL_PORT:-1025}:1025"
+      - "${PORT_MAIL_UI:-8025}:8025"
+    networks:
+      - fluig-net
+
+  fluig:
+    build: .
+    container_name: fluig
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${PORT_APP:-8080}:8080"
+      - "${PORT_SSL:-8443}:8443"
+      - "${PORT_SOLR:-8983}:8983"
+      - "${PORT_REALTIME:-8888}:8888"
+      - "${PORT_CHAT:-7070}:7070"
+    volumes:
+      - fluig-app-data:${FLUIG_INSTALL_PATH:-/opt/totvs/fluig}
+      - ../installer-package:/installer/package:ro
+      - ./scripts:/installer/scripts:ro
     networks:
       - fluig-net
 
 networks:
   fluig-net:
-    driver: bridge
 
 volumes:
   fluig-db-data:

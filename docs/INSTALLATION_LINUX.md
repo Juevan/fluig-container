@@ -40,9 +40,14 @@ Este documento detalha os passos para a instalação do TOTVS Fluig **Versão 2.
    ```
 
 ### Instalação de Bibliotecas
-Em sistemas baseados em Debian/Ubuntu, instale as dependências:
+Para Ubuntu 20.04 e 22.04:
 ```bash
 sudo apt-get install libaio1 unzip curl libx11-6 libxext6 libxrender1 libxt6 libfontconfig1 libfreetype6
+```
+
+Para Ubuntu 24.04:
+```bash
+sudo apt-get install libaio1t64 unzip curl libx11-6 libxext6 libxrender1 libxt6 libfontconfig1 libfreetype6
 ```
 
 ---

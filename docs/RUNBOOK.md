@@ -93,7 +93,7 @@ No painel wcmadmin, verifique:
 `DB_HOST` está hardcoded como `db` no compose (nome do serviço). Não é necessário configurar no `.env`.
 
 ### Erro de Memória (OOM)
-Aumente `JVM_MIN_HEAP` e `JVM_MAX_HEAP` no `.env`. Recomendado: mínimo 8 GB de RAM disponível no host.
+Aumente `JAVA_MIN_HEAP` e `JAVA_MAX_HEAP` no `.env`. Recomendado: mínimo 8 GB de RAM disponível no host.
 
 ### Porta 8080 não responde
 Verifique se o JBoss subiu corretamente:
@@ -108,19 +108,22 @@ docker exec fluig grep 'socket-binding name="http"' \
 
 | Variável | Descrição | Padrão |
 |---|---|---|
-| `DB_TYPE` | Tipo do banco (`mysql` ou `postgresql`) | `mysql` |
 | `DB_NAME` | Nome do banco | `fluig` |
 | `DB_USER` | Usuário do banco | `fluig` |
 | `DB_PASSWORD` | Senha do banco | `fluig` |
-| `JVM_MIN_HEAP` | Heap mínima da JVM (MB) | `2048` |
-| `JVM_MAX_HEAP` | Heap máxima da JVM (MB) | `4096` |
+| `JAVA_MIN_HEAP` | Heap mínima da JVM (MB) | `2048` |
+| `JAVA_MAX_HEAP` | Heap máxima da JVM (MB) | `4096` |
 | `FLUIG_UPDATE` | Forçar reinstalação no boot | `false` |
-| `INSTALL_SOLR` | Habilitar Solr (Indexer) | `true` |
-| `INSTALL_NODE` | Habilitar Node.js (Realtime) | `true` |
+| `ENABLE_SOLR` | Habilitar Solr (Indexer) | `true` |
+| `ENABLE_REALTIME` | Habilitar Node.js (Realtime) | `true` |
+| `ENABLE_MAIL` | Habilitar e-mail (Mailpit) | `true` |
 | `PORT_APP` | Porta HTTP do Fluig | `8080` |
+| `PORT_SSL` | Porta HTTPS do Fluig | `8443` |
+| `PORT_DB` | Porta exposta do MySQL | `3306` |
 | `PORT_SOLR` | Porta do Solr | `8983` |
 | `PORT_REALTIME` | Porta Express do Node | `8888` |
 | `PORT_CHAT` | Porta WebSocket do Node | `7070` |
+| `PORT_MAIL_UI` | Porta da interface web do Mailpit | `8025` |
 
 ---
 
