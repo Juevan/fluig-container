@@ -4,7 +4,7 @@
 O **Fluig Community Container** é um projeto focado em modernizar a execução da plataforma TOTVS Fluig utilizando uma arquitetura Docker modular, leve e de fácil manutenção. O objetivo principal é facilitar a criação de ambientes de desenvolvimento, estudo e homologação, removendo a complexidade das instalações manuais tradicionais.
 
 ## ✨ Principais Diferenciais
-- **Modularidade Total:** Ative ou desative os módulos de Indexação (Solr) e Real-time (Node.js) de forma independente via variáveis `ENABLE_SOLR` e `ENABLE_REALTIME` no `.env`.
+- **Modularidade Total:** Ative ou desative os módulos de Indexação (Solr) e Real-time (Node.js) de forma independente via variáveis `INSTALL_SOLR` e `INSTALL_NODE` no `.env`.
 - **Auto-Instalação:** O `entrypoint.sh` executa a instalação silenciosa do Fluig automaticamente na primeira inicialização, incluindo download do driver JDBC e patching do `standalone.xml`.
 - **Persistência Completa:** Todos os dados do banco e arquivos do GED (Volume) são preservados através de volumes Docker.
 - **Configuração via .env:** Todo o ambiente (portas, senhas, memória, pools) é gerenciado em um único arquivo de variáveis de ambiente.
@@ -56,7 +56,7 @@ fluig-community-container/
 ## ⚡ Quick Start
 ```bash
 # 1. Descompacte o instalador do Fluig na pasta installer-package/
-# 2. Configure o .env (módulos ENABLE_SOLR e ENABLE_REALTIME controlam Solr e Node.js)
+# 2. Configure o .env (módulos INSTALL_SOLR e INSTALL_NODE controlam Solr e Node.js)
 cd docker
 
 # 3. Suba o ambiente

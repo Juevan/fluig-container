@@ -5,7 +5,7 @@ start_solr() {
     # Solr 9.x bloqueia dataDirs fora do SOLR_HOME via SecurityManager.
     # O instalador cria /etc/default/fluig_Indexer.in.sh, mas sobrescrevemos
     # com as flags necessárias para o Fluig funcionar.
-    if [ "$ENABLE_SOLR" = "true" ] && [ -f "$FLUIG_INSTALL_PATH/solr/bin/solr" ]; then
+    if [ "$INSTALL_SOLR" = "true" ] && [ -f "$FLUIG_INSTALL_PATH/solr/bin/solr" ]; then
         export JAVA_HOME="$FLUIG_INSTALL_PATH/jdk-64"
         export PATH="$JAVA_HOME/bin:$PATH"
 

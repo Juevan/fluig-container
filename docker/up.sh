@@ -18,8 +18,8 @@ if [ -z "$(ls -A ../installer-package 2>/dev/null)" ]; then
 fi
 
 echo "Iniciando ambiente Fluig Community Container..."
-echo "  Solr  : $(grep '^ENABLE_SOLR' .env | cut -d= -f2)"
-echo "  Node  : $(grep '^ENABLE_REALTIME' .env | cut -d= -f2)"
+echo "  Solr  : $(grep '^INSTALL_SOLR' .env | cut -d= -f2)"
+echo "  Node  : $(grep '^INSTALL_NODE' .env | cut -d= -f2)"
 echo "  E-mail: $(grep '^ENABLE_MAIL' .env | cut -d= -f2)"
 echo ""
 

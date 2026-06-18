@@ -3,18 +3,20 @@
 set -e
 
 # --- Export de variáveis com fallbacks padrão para o envsubst e runtime ---
+export DB_TYPE=${DB_TYPE:-"mysql"}
 export DB_HOST=${DB_HOST:-"db"}
 export DB_PORT=${DB_PORT:-"3306"}
 export DB_NAME=${DB_NAME:-"fluig"}
 export DB_USER=${DB_USER:-"fluig"}
 export DB_PASSWORD=${DB_PASSWORD:-"fluig"}
 export FLUIG_INSTALL_PATH=${FLUIG_INSTALL_PATH:-"/opt/totvs/fluig"}
-export ENABLE_SOLR=${ENABLE_SOLR:-"true"}
-export ENABLE_REALTIME=${ENABLE_REALTIME:-"true"}
+export INSTALL_SOLR=${INSTALL_SOLR:-"true"}
+export INSTALL_NODE=${INSTALL_NODE:-"true"}
 export POOL_DS_MIN=${POOL_DS_MIN:-"10"}
 export POOL_DS_MAX=${POOL_DS_MAX:-"100"}
-export JAVA_MIN_HEAP=${JAVA_MIN_HEAP:-"2048"}
-export JAVA_MAX_HEAP=${JAVA_MAX_HEAP:-"4096"}
+export JVM_MIN_HEAP=${JVM_MIN_HEAP:-"2048"}
+export JVM_MAX_HEAP=${JVM_MAX_HEAP:-"4096"}
+export POOL_EJB=${POOL_EJB:-"20"}
 export LS_HOST=${LS_HOST:-"127.0.0.1"}
 export LS_PORT=${LS_PORT:-"5555"}
 export NODE_HOST=${NODE_HOST:-"localhost"}
@@ -27,8 +29,8 @@ export EMAIL_PORT=${EMAIL_PORT:-"1025"}
 export EMAIL_SENDER=${EMAIL_SENDER:-"fluig@localhost"}
 
 # --- Export de variáveis específicas de runtime do JBoss/Wildfly ---
-export FLUIG_SERVER_MEMORY_MIN="${JAVA_MIN_HEAP}m"
-export FLUIG_SERVER_MEMORY_MAX="${JAVA_MAX_HEAP}m"
+export FLUIG_SERVER_MEMORY_MIN="${JVM_MIN_HEAP}m"
+export FLUIG_SERVER_MEMORY_MAX="${JVM_MAX_HEAP}m"
 export FLUIG_CONFIG_DATABASE_MIN_POOL_SIZE="${POOL_DS_MIN}"
 export FLUIG_CONFIG_DATABASE_MAX_POOL_SIZE="${POOL_DS_MAX}"
 export FLUIG_CONFIG_DATABASE_MIN_POOL_SIZE_RO="${POOL_DS_MIN}"

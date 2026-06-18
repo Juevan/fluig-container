@@ -9,7 +9,7 @@ Dois containers orquestrados por um único `docker-compose.yml`:
 | `fluig` | Ubuntu 24.04 (customizado) | WildFly/JBoss + Solr + Node.js |
 | `fluig-db` | mysql:8.0 | Persistência de dados |
 
-Solr e Node.js rodam **dentro do container `fluig`**, controlados pelas variáveis `ENABLE_SOLR` e `ENABLE_REALTIME` no `.env`.
+Solr e Node.js rodam **dentro do container `fluig`**, controlados pelas variáveis `INSTALL_SOLR` e `INSTALL_NODE` no `.env`.
 
 ### Rede e Volumes
 
