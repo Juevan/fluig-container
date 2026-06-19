@@ -39,16 +39,18 @@ EOF
             echo "Core Solr '0' criado."
         fi
 
-        # Pre-cria a pasta de configuração do core '1' para o tenant 1 do Fluig.
-        # JBoss cria este core dinamicamente enviando CREATE com instanceDir=1.
+        # Pre-cria as pastas de configuração dos cores de 1 a 999 para suporte a múltiplos tenants.
+        # JBoss cria esses cores dinamicamente enviando CREATE com instanceDir=N (ex: instanceDir=2).
         # Sem a pasta conf no instanceDir, o Solr falha por não achar solrconfig.xml.
-        # IMPORTANTE: Não criamos o diretório físico do repositório (/opt/totvs/fluig/repository/001)
-        # nem registramos o core 1 via curl aqui para não falhar a validação do wizard do Fluig (erro "não está vazio").
-        if [ ! -d "$FLUIG_INSTALL_PATH/solr/server/solr/1" ]; then
-            mkdir -p "$FLUIG_INSTALL_PATH/solr/server/solr/1"
-            cp -rf "$FLUIG_INSTALL_PATH/solr/server/solr/configsets/fluig/conf" "$FLUIG_INSTALL_PATH/solr/server/solr/1/"
-            chown -R fluig:fluig "$FLUIG_INSTALL_PATH/solr/server/solr/1"
-            echo "Pasta de configuração do Core Solr '1' pre-criada."
-        fi
+        # IMPORTANTE: Não criamos os diretórios físicos do repositório (/opt/totvs/fluig/repository/00X)
+        # nem registramos os cores via curl aqui para não falhar a validação do wizard do Fluig (erro "não está vazio").
+        echo "Pre-criando pastas de configuração do Solr para múltiplos tenants...9"
+        for t in $(seq 1 999); do
+            if [ ! -d "$FLUIG_INSTALL_PATH/solr/server/solr/$t" ]; then
+                mkdir -p "$FLUIG_INSTALL_PATH/solr/server/solr/$t"
+                ln -sf "../configsets/fluig/conf" "$FLUIG_INSTALL_PATH/solr/server/solr/$t/conf"
+            fi
+        done
+        chown -hR fluig:fluig "$FLUIG_INSTALL_PATH/solr/server/solr/"
     fi
 }
