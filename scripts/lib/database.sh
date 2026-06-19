@@ -13,10 +13,11 @@ setup_database_driver() {
 wait_database() {
     setup_database_driver
     echo "Aguardando banco ($DB_HOST:$DB_PORT)..."
-    until timeout 1 bash -c "cat < /dev/null > /dev/tcp/$DB_HOST/$DB_PORT" 2>/dev/null; do sleep 2; done
+    until (: < "/dev/tcp/$DB_HOST/$DB_PORT") 2>/dev/null; do sleep 2; done
     echo "Banco disponível."
 
     mkdir -p /tmp/fluig-installer
-    [ ! -f "$DB_DRIVER_PATH" ] && [ -n "$DB_DRIVER_URL" ] && \
+    if [ ! -f "$DB_DRIVER_PATH" ] && [ -n "$DB_DRIVER_URL" ]; then
         curl -L -s -o "$DB_DRIVER_PATH" "$DB_DRIVER_URL"
+    fi
 }

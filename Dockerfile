@@ -19,8 +19,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m fluig && \
-    mkdir -p /opt/totvs/fluig && \
-    mkdir -p /installer/scripts
+    mkdir -p /opt/totvs/fluig /installer/scripts
 
 WORKDIR /opt/totvs/fluig
 

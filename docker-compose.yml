@@ -57,7 +57,7 @@ services:
       - "${PORT_CHAT:-7070}:7070"
     volumes:
       - fluig-app-data:${FLUIG_INSTALL_PATH:-/opt/totvs/fluig}
-      - ../installer-package:/installer/package:ro
+      - ./installer-package:/installer/package:ro
       - ./scripts:/installer/scripts:ro
     networks:
       - fluig-net

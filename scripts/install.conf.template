@@ -23,6 +23,10 @@ db_roMaxPoolSize=${POOL_DS_MAX}
 
 # Recursos Desabilitados (Desenvolvimento)
 email_needsAuth=false
+email.from=${MAIL_FROM}
+email.personal=${MAIL_PERSONAL}
+email.user=${MAIL_USER}
+email.password=${MAIL_PASSWORD}
 
 # License Server
 license_type=ls

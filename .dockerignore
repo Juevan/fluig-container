@@ -1,0 +1,6 @@
+.git
+docs
+installer-package
+*.ZIP
+*.zip
+*.log

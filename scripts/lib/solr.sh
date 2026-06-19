@@ -1,4 +1,7 @@
-#!/bin/bash
+# Helper function to run commands under fluig user with Java environment
+run_as_fluig_with_java() {
+    su - fluig -c "export JAVA_HOME=\"$FLUIG_INSTALL_PATH/jdk-64\" && export PATH=\"\$JAVA_HOME/bin:\$PATH\" && $1"
+}
 
 start_solr() {
     # --- Solr (Indexer) ---
@@ -16,10 +19,10 @@ EOF
 
         chmod 644 /etc/default/fluig_Indexer.in.sh
 
-        su - fluig -c "export JAVA_HOME=\"$FLUIG_INSTALL_PATH/jdk-64\" && export PATH=\"\$JAVA_HOME/bin:\$PATH\" && \"$FLUIG_INSTALL_PATH/solr/bin/solr\" start -p 8983 2>&1" || true
+        run_as_fluig_with_java "\"$FLUIG_INSTALL_PATH/solr/bin/solr\" start -p 8983 2>&1" || true
 
         for i in $(seq 1 30); do
-            su - fluig -c "export JAVA_HOME=\"$FLUIG_INSTALL_PATH/jdk-64\" && export PATH=\"\$JAVA_HOME/bin:\$PATH\" && \"$FLUIG_INSTALL_PATH/solr/bin/solr\" status" 2>/dev/null | grep -q "running" && { echo "Solr pronto."; break; }
+            run_as_fluig_with_java "\"$FLUIG_INSTALL_PATH/solr/bin/solr\" status" 2>/dev/null | grep -q "running" && { echo "Solr pronto."; break; }
             sleep 2
         done
 

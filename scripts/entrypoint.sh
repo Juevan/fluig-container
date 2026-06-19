@@ -27,6 +27,10 @@ export PORT_APP=${PORT_APP:-"8080"}
 export EMAIL_HOST=${EMAIL_HOST:-"mailpit"}
 export EMAIL_PORT=${EMAIL_PORT:-"1025"}
 export EMAIL_SENDER=${EMAIL_SENDER:-"fluig@localhost"}
+export MAIL_FROM=${MAIL_FROM:-"fluig@localhost"}
+export MAIL_PERSONAL=${MAIL_PERSONAL:-"Fluig"}
+export MAIL_USER=${MAIL_USER:-""}
+export MAIL_PASSWORD=${MAIL_PASSWORD:-""}
 
 # --- Export de variáveis específicas de runtime do JBoss/Wildfly ---
 export FLUIG_SERVER_MEMORY_MIN="${JVM_MIN_HEAP}m"
@@ -37,12 +41,10 @@ export FLUIG_CONFIG_DATABASE_MIN_POOL_SIZE_RO="${POOL_DS_MIN}"
 export FLUIG_CONFIG_DATABASE_MAX_POOL_SIZE_RO="${POOL_DS_MAX}"
 
 # --- Carregar bibliotecas modulares ---
-source /installer/scripts/lib/database.sh
-source /installer/scripts/lib/installer.sh
-source /installer/scripts/lib/xml.sh
-source /installer/scripts/lib/solr.sh
-source /installer/scripts/lib/jboss.sh
-source /installer/scripts/lib/realtime.sh
+for lib in database installer xml solr jboss realtime; do
+    # shellcheck disable=SC1090
+    source "/installer/scripts/lib/${lib}.sh"
+done
 
 # --- Orquestração ---
 wait_database

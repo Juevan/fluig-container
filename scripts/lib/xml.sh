@@ -5,15 +5,15 @@ patch_xml() {
     # --- Patches no standalone.xml ---
     # Aplicados em todo boot para garantir consistência após reinstalações.
     if [ -f "$XML_CONFIG" ]; then
-        SMTP_SERVER=${EMAIL_HOST:-"mailpit"}
-        SMTP_PORT=${EMAIL_PORT:-"1025"}
-        [[ ! "$SMTP_PORT" =~ ^[0-9]+$ ]] && SMTP_PORT="1025"
+        local smtp_server=${EMAIL_HOST:-"mailpit"}
+        local smtp_port=${EMAIL_PORT:-"1025"}
+        [[ ! "$smtp_port" =~ ^[0-9]+$ ]] && smtp_port="1025"
 
         sed -i \
             's|<inet-address[^>]*/>|<any-address/>|g;
               s|socket-binding name="http" port="[^"]*"|socket-binding name="http" port="8080"|g;
-              s|__email_smtpServer__|'"$SMTP_SERVER"'|g;
-              s|__email_smtpPort__|'"$SMTP_PORT"'|g' \
+              s|__email_smtpServer__|'"$smtp_server"'|g;
+              s|__email_smtpPort__|'"$smtp_port"'|g' \
             "$XML_CONFIG"
     fi
 
