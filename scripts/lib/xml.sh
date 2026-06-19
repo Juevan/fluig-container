@@ -10,7 +10,8 @@ patch_xml() {
         [[ ! "$smtp_port" =~ ^[0-9]+$ ]] && smtp_port="1025"
 
         sed -i \
-            's|<inet-address[^>]*/>|<any-address/>|g;
+            's|<inet-address[^>]*/>|<inet-address value="0.0.0.0"/>|g;
+              s|<any-address/>|<inet-address value="0.0.0.0"/>|g;
               s|socket-binding name="http" port="[^"]*"|socket-binding name="http" port="8080"|g;
               s|__email_smtpServer__|'"$smtp_server"'|g;
               s|__email_smtpPort__|'"$smtp_port"'|g' \

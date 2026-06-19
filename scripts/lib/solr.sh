@@ -38,5 +38,17 @@ EOF
             curl -s "http://localhost:8983/solr/admin/cores?action=CREATE&name=0&configSet=fluig&dataDir=${SOLR_DATA_DIR}" > /dev/null
             echo "Core Solr '0' criado."
         fi
+
+        # Pre-cria a pasta de configuração do core '1' para o tenant 1 do Fluig.
+        # JBoss cria este core dinamicamente enviando CREATE com instanceDir=1.
+        # Sem a pasta conf no instanceDir, o Solr falha por não achar solrconfig.xml.
+        # IMPORTANTE: Não criamos o diretório físico do repositório (/opt/totvs/fluig/repository/001)
+        # nem registramos o core 1 via curl aqui para não falhar a validação do wizard do Fluig (erro "não está vazio").
+        if [ ! -d "$FLUIG_INSTALL_PATH/solr/server/solr/1" ]; then
+            mkdir -p "$FLUIG_INSTALL_PATH/solr/server/solr/1"
+            cp -rf "$FLUIG_INSTALL_PATH/solr/server/solr/configsets/fluig/conf" "$FLUIG_INSTALL_PATH/solr/server/solr/1/"
+            chown -R fluig:fluig "$FLUIG_INSTALL_PATH/solr/server/solr/1"
+            echo "Pasta de configuração do Core Solr '1' pre-criada."
+        fi
     fi
 }
